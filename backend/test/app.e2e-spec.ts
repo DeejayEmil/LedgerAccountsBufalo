@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { getDataSourceToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
@@ -183,6 +185,78 @@ describe('Accounts & Ledger (e2e)', () => {
     expect(res.body.errors).toBeUndefined();
     expect(res.body.data.balanceHistory.length).toBeGreaterThanOrEqual(1);
     expect(res.body.data.balanceHistory[0].closingBalance).toBe('200.00');
+  });
+
+  it('respeta la ventana de días: excluye movimientos viejos y conserva los recientes', async () => {
+    // Reproduce el reporte real: filtrar por 7/90 días debía seguir
+    // mostrando datos. Creamos un segundo movimiento y lo "envejecemos"
+    // manualmente vía SQL directo (simulando una transacción de hace 40
+    // días), para verificar que el filtro de ventana realmente separa lo
+    // que debe incluir de lo que debe excluir, en vez de solo probar el
+    // caso trivial de "todo pasó hace un segundo".
+    const dataSource = app.get<DataSource>(getDataSourceToken());
+
+    const oldTxRes = await request(app.getHttpServer())
+      .post('/graphql')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        query: `mutation($input: CreateTransactionInput!) {
+          createTransaction(input: $input) { id balanceAfter }
+        }`,
+        variables: {
+          input: { accountId, type: 'CREDIT', amount: '50.00' },
+        },
+      })
+      .expect(200);
+    const oldTxId = oldTxRes.body.data.createTransaction.id;
+
+    const fortyDaysAgo = new Date();
+    fortyDaysAgo.setUTCDate(fortyDaysAgo.getUTCDate() - 40);
+    await dataSource.query(
+      'UPDATE ledger_transactions SET created_at = $1 WHERE id = $2',
+      [fortyDaysAgo, oldTxId],
+    );
+
+    // Ventana corta (7 días): el movimiento de hace 40 días queda fuera,
+    // pero el depósito original (recién creado) sigue apareciendo.
+    const shortWindowRes = await request(app.getHttpServer())
+      .post('/graphql')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        query: `query($accountId: String!, $days: Int) {
+          balanceHistory(accountId: $accountId, days: $days) { date closingBalance }
+        }`,
+        variables: { accountId, days: 7 },
+      })
+      .expect(200);
+
+    expect(shortWindowRes.body.errors).toBeUndefined();
+    expect(shortWindowRes.body.data.balanceHistory.length).toBeGreaterThanOrEqual(1);
+    expect(
+      shortWindowRes.body.data.balanceHistory.some(
+        (p: { closingBalance: string }) => p.closingBalance === '50.00',
+      ),
+    ).toBe(false);
+
+    // Ventana larga (90 días): ambos movimientos entran, y el balance de
+    // cierre final refleja el crédito más reciente (200 + 50).
+    const longWindowRes = await request(app.getHttpServer())
+      .post('/graphql')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        query: `query($accountId: String!, $days: Int) {
+          balanceHistory(accountId: $accountId, days: $days) { date closingBalance }
+        }`,
+        variables: { accountId, days: 90 },
+      })
+      .expect(200);
+
+    expect(longWindowRes.body.errors).toBeUndefined();
+    expect(longWindowRes.body.data.balanceHistory.length).toBeGreaterThanOrEqual(2);
+    const closingBalances = longWindowRes.body.data.balanceHistory.map(
+      (p: { closingBalance: string }) => p.closingBalance,
+    );
+    expect(closingBalances).toContain('250.00');
   });
 
   it('actualiza el avatar del usuario', async () => {

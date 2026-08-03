@@ -30,7 +30,13 @@ export function BalanceHistoryChart({ accountId }: { accountId: string }) {
   }>(BALANCE_HISTORY_QUERY, {
     variables: { accountId, days },
     fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
   });
+
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.error('[BalanceHistoryChart] Error al cargar historial:', error);
+  }
 
   const points = (data?.balanceHistory ?? []).slice(-MAX_BARS);
   const values = points.map((p) => Number(p.closingBalance));

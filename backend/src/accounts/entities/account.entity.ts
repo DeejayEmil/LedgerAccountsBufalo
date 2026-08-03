@@ -53,6 +53,6 @@ export class Account {
   @OneToMany(() => LedgerTransaction, (tx) => tx.account)
   transactions: LedgerTransaction[];
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 }

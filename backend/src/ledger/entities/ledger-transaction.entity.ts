@@ -48,7 +48,14 @@ export class LedgerTransaction {
   @Column({ type: 'varchar', length: 255, nullable: true })
   description: string | null;
 
+  // `timestamptz` explícito: el tipo por defecto de TypeORM en Postgres es
+  // `timestamp` (sin zona horaria), que guarda solo la hora "de pared". Si
+  // el proceso de Node corre en una zona horaria distinta a la sesión de
+  // Postgres (típico: backend nativo en la laptop del dev vs. contenedor
+  // Docker en UTC), el driver reconstruye el instante leyendo esos
+  // números como si fueran locales, desfasando `createdAt` varias horas.
+  // `timestamptz` guarda el instante real (UTC) y evita ese desfase.
   @Index()
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 }

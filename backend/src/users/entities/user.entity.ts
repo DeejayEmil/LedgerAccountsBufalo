@@ -39,6 +39,6 @@ export class User {
   @OneToMany(() => Account, (account) => account.owner)
   accounts: Account[];
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 }
