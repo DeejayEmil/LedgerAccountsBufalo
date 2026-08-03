@@ -1,13 +1,13 @@
 # QikBanco — Accounts & Ledger Service
 
-Prueba técnica full-stack: servicio de cuentas y libro mayor (ledger) para un banco digital, con extras (transferencias entre usuarios, historial de balance, foto de perfil, comprobantes por correo).
+Prueba técnica full-stack: servicio de cuentas y libro mayor (ledger) para Qik banco digital, con extras (transferencias entre usuarios, historial de balance, foto de perfil, comprobantes por correo).
 
-Stack: **NestJS + GraphQL + TypeORM + PostgreSQL + Redis** (backend) y **React Native (Expo) + TypeScript** (frontend), tal como pide el mandato original.
+Stack: **NestJS + GraphQL + TypeORM + PostgreSQL + Redis** (backend) y **React Native (Expo) + TypeScript** (frontend).
 
-## Estructura
+## Estructura y branches
 
 ```
-neobank/
+├── main/ # Readme general del proyecto y link de video demostrativo
 ├── backend/     # API NestJS (REST para auth, GraphQL para el dominio)
 └── frontend/    # App React Native (Expo)
 ```
@@ -25,11 +25,11 @@ neobank/
 - **Mensajes de éxito**: confirmación en pantalla con los detalles del movimiento al completarse.
 - **Auth**: registro/login con JWT (bcrypt para contraseñas).
 
-No implementado (fuera de alcance explícito del mandato): infraestructura de despliegue, CI/CD, diseño UI pulido.
+No implementado: infraestructura de despliegue, CI/CD, diseño UI pulido.
 
 ## Requisitos
 
-- Node.js 20+
+- Node.js, React Native
 - Docker (para levantar PostgreSQL y Redis del backend)
 - Para correr la app móvil: Expo Go en tu teléfono, o un simulador iOS/Android
 
