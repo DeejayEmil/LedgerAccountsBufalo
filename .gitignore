@@ -1,0 +1,7 @@
+# Cada proyecto (backend/, frontend/) tiene su propio .gitignore más
+# específico. Este archivo solo cubre basura a nivel raíz del repo.
+.DS_Store
+*.log
+.idea
+.vscode/*
+!.vscode/extensions.json

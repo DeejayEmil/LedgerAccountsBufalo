@@ -1,0 +1,40 @@
+# Servicios de infraestructura para desarrollo local.
+# Levantar con: docker compose up -d  (o `docker-compose up -d` con la CLI standalone)
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: qikbanco_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-qikbanco}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-qikbanco}
+      POSTGRES_DB: ${DB_NAME:-qikbanco_ledger}
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - qikbanco_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # -d explícito: sin esto, pg_isready asume una base con el mismo
+      # nombre que el usuario y logueaba un FATAL inofensivo cada 5s.
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-qikbanco} -d ${DB_NAME:-qikbanco_ledger}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: qikbanco_redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - qikbanco_redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  qikbanco_postgres_data:
+  qikbanco_redis_data:
