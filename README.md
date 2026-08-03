@@ -1,5 +1,8 @@
 # QikBanco — Accounts & Ledger Service
 
+## Video Demo 
+[Video Demo](https://drive.google.com/drive/folders/1SE8ne3-WaAd4Q4fzzuTki2X9rzifS8qZ)
+
 Prueba técnica full-stack: servicio de cuentas y libro mayor (ledger) para Qik banco digital, con extras (transferencias entre usuarios, historial de balance, foto de perfil, comprobantes por correo).
 
 Stack: **NestJS + GraphQL + TypeORM + PostgreSQL + Redis** (backend) y **React Native (Expo) + TypeScript** (frontend).
