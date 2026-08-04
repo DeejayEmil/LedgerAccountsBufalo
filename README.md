@@ -10,9 +10,9 @@ Stack: **NestJS + GraphQL + TypeORM + PostgreSQL + Redis** (backend) y **React N
 ## Estructura y branches
 
 ```
-├── main/ # Readme general del proyecto y link de video demostrativo
-├── backend/     # API NestJS (REST para auth, GraphQL para el dominio)
-└── frontend/    # App React Native (Expo)
+── main/ # Readme general del proyecto y link de video demostrativo
+  ├── backend/     # API NestJS (REST para auth, GraphQL para el dominio)
+  └── frontend/    # App React Native (Expo)
 ```
 
 ## Funcionalidad implementada
